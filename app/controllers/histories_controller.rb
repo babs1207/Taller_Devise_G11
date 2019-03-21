@@ -40,13 +40,15 @@ class HistoriesController < ApplicationController
   # PATCH/PUT /histories/1
   # PATCH/PUT /histories/1.json
   def update
-    respond_to do |format|
-      if @history.update(history_params)
-        format.html { redirect_to @history, notice: 'History was successfully updated.' }
-        format.json { render :show, status: :ok, location: @history }
-      else
-        format.html { render :edit }
-        format.json { render json: @history.errors, status: :unprocessable_entity }
+    if @history.user_id == current_user.id || current_user.admin?
+      respond_to do |format|
+        if @history.update(history_params)
+          format.html { redirect_to @history, notice: 'History was successfully updated.' }
+          format.json { render :show, status: :ok, location: @history }
+        else
+          format.html { render :edit }
+          format.json { render json: @history.errors, status: :unprocessable_entity }
+        end
       end
     end
   end
@@ -54,11 +56,17 @@ class HistoriesController < ApplicationController
   # DELETE /histories/1
   # DELETE /histories/1.json
   def destroy
-    @history.destroy
-    respond_to do |format|
-      format.html { redirect_to histories_url, notice: 'History was successfully destroyed.' }
-      format.json { head :no_content }
+    if @history.user_id == current_user.id || current_user.admin?
+      @history.destroy
+      respond_to do |format|
+        format.html { redirect_to histories_url, notice: 'History was successfully destroyed.' }
+        format.json { head :no_content }
+      end
     end
+  end
+
+  def my_histories
+    @my_histories = History.where(user_id: current_user.id)
   end
 
   private
